@@ -155,6 +155,44 @@ pipeline.synth(true, undefined, {
 - (For Bedrock analysis) IAM role with `bedrock:InvokeModel` permission
 - CDK bootstrapped in target accounts/regions
 
+## GitHub Environment Setup
+
+One-time setup to configure approval gates. Run from a machine with `gh` CLI authenticated:
+
+```bash
+REPO="your-org/your-repo"
+
+# Dev — no protection, auto-deploys
+gh api "repos/$REPO/environments/dev" -X PUT --input - <<< '{}'
+
+# Staging — requires approval
+gh api "repos/$REPO/environments/staging" -X PUT --input - <<< '{
+  "reviewers": [
+    {"type": "User", "id": <YOUR_GITHUB_USER_ID>}
+  ]
+}'
+
+# Prod — requires approval + 30 min wait + branch restriction
+gh api "repos/$REPO/environments/prod" -X PUT --input - <<< '{
+  "reviewers": [
+    {"type": "User", "id": <YOUR_GITHUB_USER_ID>}
+  ],
+  "wait_timer": 30,
+  "deployment_branch_policy": {
+    "protected_branches": false,
+    "custom_branch_policies": true
+  }
+}'
+
+# Restrict prod to main branch only
+gh api "repos/$REPO/environments/prod/deployment-branch-policies" -X POST \
+  --input - <<< '{"name": "main", "type": "branch"}'
+```
+
+To find your GitHub user ID: `gh api user --jq '.id'`
+
+> **Tip:** If you're using AgentL as part of a template repo, include a `scripts/setup-environments.sh` with these commands pre-filled. New projects just run the script once after creating the repo from the template.
+
 ## License
 
 Apache-2.0
