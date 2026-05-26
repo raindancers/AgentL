@@ -1,39 +1,32 @@
 import { Stack } from 'aws-cdk-lib';
 import { GHAWave } from './gha-wave';
 
-export interface AddStackOptions {
-  /** Stacks within this stage that this stack depends on */
-  readonly dependsOn?: Stack[];
-}
-
-export interface StackEntry {
-  readonly stack: Stack;
-  readonly dependsOn: Stack[];
-}
-
 /**
- * A stage within a wave. Stages within the same wave deploy in parallel by default.
+ * A stage represents a deployment environment (e.g. dev, staging, prod).
+ * Stages deploy sequentially in the order they are added to the pipeline.
+ * Each stage contains waves, which deploy sequentially within the stage.
  */
 export class GHAStage {
   public readonly id: string;
-  public readonly wave: GHAWave;
-  public readonly stacks: StackEntry[] = [];
+  public readonly waves: GHAWave[] = [];
 
-  constructor(id: string, wave: GHAWave) {
+  constructor(id: string) {
     this.id = id;
-    this.wave = wave;
   }
 
   /**
-   * Register a standard CDK Stack into this stage.
-   * @param stack A standard CDK Stack
-   * @param options Optional dependencies within this stage
+   * Add a wave to this stage. Waves deploy sequentially.
+   * Stacks within a wave deploy in parallel.
+   * @param id Wave identifier (e.g. 'Foundation', 'Platform', 'Services')
    */
-  public addStack(stack: Stack, options?: AddStackOptions): Stack {
-    this.stacks.push({
-      stack: stack,
-      dependsOn: options?.dependsOn || [],
-    });
-    return stack;
+  public addWave(id: string): GHAWave {
+    const wave = new GHAWave(id);
+    this.waves.push(wave);
+    return wave;
+  }
+
+  /** Get all stacks in this stage, in wave order. */
+  public allStacks(): Stack[] {
+    return this.waves.flatMap(w => w.stacks.map(e => e.stack));
   }
 }

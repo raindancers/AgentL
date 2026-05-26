@@ -1,42 +1,62 @@
 import { App, Stack } from 'aws-cdk-lib';
 import { GHAPipeline } from '../src';
 
-test('pipeline wires dependencies between waves using standard stacks', () => {
+test('pipeline wires dependencies: waves sequential, stacks parallel', () => {
   const app = new App();
   const pipeline = new GHAPipeline();
 
-  const infraWave = pipeline.addWave('Infra');
-  const infraStage = infraWave.addStage('dev');
-  const network = new Stack(app, 'Network');
-  const database = new Stack(app, 'Database');
-  infraStage.addStack(network);
-  infraStage.addStack(database, { dependsOn: [network] });
+  const dev = pipeline.addStage('dev');
 
-  const appWave = pipeline.addWave('App');
-  const appStage = appWave.addStage('dev');
-  const api = new Stack(app, 'Api');
-  appStage.addStack(api);
+  const foundation = dev.addWave('Foundation');
+  const network = new Stack(app, 'Network');
+  const storage = new Stack(app, 'Storage');
+  foundation.addStack(network);
+  foundation.addStack(storage);
+
+  const platform = dev.addWave('Platform');
+  const compute = new Stack(app, 'Compute');
+  platform.addStack(compute);
 
   pipeline.synth(false);
 
-  // Api should depend on both Network and Database (cross-wave)
-  const apiDeps = api.dependencies.map(d => d.stackName);
-  expect(apiDeps).toContain('Network');
-  expect(apiDeps).toContain('Database');
+  // Compute should depend on both Network and Storage (wave ordering)
+  const computeDeps = compute.dependencies.map(d => d.stackName);
+  expect(computeDeps).toContain('Network');
+  expect(computeDeps).toContain('Storage');
 
-  // Database should depend on Network (intra-stage)
-  const dbDeps = database.dependencies.map(d => d.stackName);
-  expect(dbDeps).toContain('Network');
+  // Network and Storage should have no deps on each other (parallel in same wave)
+  expect(network.dependencies).toHaveLength(0);
+  expect(storage.dependencies).toHaveLength(0);
 });
 
-test('stackNames returns all stacks in order', () => {
+test('pipeline wires inter-stage dependencies', () => {
   const app = new App();
   const pipeline = new GHAPipeline();
 
-  const wave = pipeline.addWave('Deploy');
-  const stage = wave.addStage('prod');
-  stage.addStack(new Stack(app, 'StackA'));
-  stage.addStack(new Stack(app, 'StackB'));
+  const dev = pipeline.addStage('dev');
+  const devWave = dev.addWave('Deploy');
+  const devStack = new Stack(app, 'DevStack');
+  devWave.addStack(devStack);
 
-  expect(pipeline.stackNames()).toEqual(['StackA', 'StackB']);
+  const staging = pipeline.addStage('staging');
+  const stagingWave = staging.addWave('Deploy');
+  const stagingStack = new Stack(app, 'StagingStack');
+  stagingWave.addStack(stagingStack);
+
+  pipeline.synth(false);
+
+  // Staging should depend on dev
+  const stagingDeps = stagingStack.dependencies.map(d => d.stackName);
+  expect(stagingDeps).toContain('DevStack');
+});
+
+test('stackNames returns all stacks across stages', () => {
+  const app = new App();
+  const pipeline = new GHAPipeline();
+
+  const dev = pipeline.addStage('dev');
+  dev.addWave('W1').addStack(new Stack(app, 'A'));
+  dev.addWave('W2').addStack(new Stack(app, 'B'));
+
+  expect(pipeline.stackNames()).toEqual(['A', 'B']);
 });

@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { GHAWave } from './gha-wave';
+import { GHAStage } from './gha-stage';
 
 export interface GHAWorkflowConfig {
   /** Directory to write workflow files @default .github/workflows */
@@ -9,7 +9,7 @@ export interface GHAWorkflowConfig {
   readonly awsRegion: string;
   /** IAM role ARN to assume for deployments (OIDC) */
   readonly deployRoleArn: string;
-  /** IAM role ARN for Bedrock analysis (can be same as deploy role) */
+  /** IAM role ARN for Bedrock analysis @default same as deployRoleArn */
   readonly bedrockRoleArn?: string;
   /** Bedrock region @default us-east-1 */
   readonly bedrockRegion?: string;
@@ -29,19 +29,16 @@ export interface GHAWorkflowConfig {
 
 /**
  * Generate GitHub Actions workflows for the pipeline.
- * Creates:
- * - pr-review.yml: synth, diff, Bedrock analysis, post PR comment
- * - deploy.yml: synth, deploy wave-by-wave on merge
  */
-export function generateWorkflows(waves: GHAWave[], config: GHAWorkflowConfig): void {
+export function generateWorkflows(stages: GHAStage[], config: GHAWorkflowConfig): void {
   const outputDir = config.outputDir || '.github/workflows';
   fs.mkdirSync(outputDir, { recursive: true });
 
-  fs.writeFileSync(path.join(outputDir, 'pr-review.yml'), buildPRWorkflow(waves, config));
-  fs.writeFileSync(path.join(outputDir, 'deploy.yml'), buildDeployWorkflow(waves, config));
+  fs.writeFileSync(path.join(outputDir, 'pr-review.yml'), buildPRWorkflow(stages, config));
+  fs.writeFileSync(path.join(outputDir, 'deploy.yml'), buildDeployWorkflow(stages, config));
 }
 
-function buildPRWorkflow(waves: GHAWave[], config: GHAWorkflowConfig): string {
+function buildPRWorkflow(stages: GHAStage[], config: GHAWorkflowConfig): string {
   const nodeVersion = config.nodeVersion || '22';
   const installCmd = config.installCommand || 'npm ci';
   const synthCmd = config.synthCommand || 'npx cdk synth';
@@ -50,9 +47,7 @@ function buildPRWorkflow(waves: GHAWave[], config: GHAWorkflowConfig): string {
   const enableBedrock = config.enableBedrockAnalysis !== false;
   const branch = config.deployBranch || 'main';
 
-  const allStackNames = waves.flatMap(w =>
-    w.stages.flatMap(s => s.stacks.map(e => e.stack.stackName)),
-  );
+  const allStackNames = stages.flatMap(s => s.allStacks().map(st => st.stackName));
 
   const diffSteps = allStackNames.map(name =>
     [
@@ -153,7 +148,7 @@ function buildPRWorkflow(waves: GHAWave[], config: GHAWorkflowConfig): string {
   return lines.join('\n') + '\n';
 }
 
-function buildDeployWorkflow(waves: GHAWave[], config: GHAWorkflowConfig): string {
+function buildDeployWorkflow(stages: GHAStage[], config: GHAWorkflowConfig): string {
   const nodeVersion = config.nodeVersion || '22';
   const installCmd = config.installCommand || 'npm ci';
   const synthCmd = config.synthCommand || 'npx cdk synth';
@@ -202,17 +197,29 @@ function buildDeployWorkflow(waves: GHAWave[], config: GHAWorkflowConfig): strin
     '          path: cdk.out/',
   ];
 
+  // One job per stage, each stage deploys its waves sequentially
   let previousJobId = 'synth';
 
-  for (let w = 0; w < waves.length; w++) {
-    const wave = waves[w];
-    const jobId = 'deploy_wave_' + w;
-    const stacks = wave.stages.flatMap(s => s.stacks.map(e => e.stack.stackName));
+  for (let s = 0; s < stages.length; s++) {
+    const stage = stages[s];
+    const stageJobId = 'deploy_' + stage.id;
+
+    // Each wave within the stage becomes a step (sequential)
+    // Stacks within a wave use --concurrency (parallel)
+    const deploySteps: string[] = [];
+    for (const wave of stage.waves) {
+      const stacks = wave.stacks.map(e => e.stack.stackName).join(' ');
+      deploySteps.push(
+        '',
+        '      - name: "🌊 ' + wave.id + '"',
+        '        run: npx cdk deploy ' + stacks + ' --require-approval never --concurrency ' + concurrency + ' --app cdk.out/',
+      );
+    }
 
     lines.push(
       '',
-      '  ' + jobId + ':',
-      '    name: "🌊 ' + wave.id + '"',
+      '  ' + stageJobId + ':',
+      '    name: "🚀 ' + stage.id + '"',
       '    runs-on: ubuntu-latest',
       '    needs: ' + previousJobId,
       '    steps:',
@@ -234,12 +241,10 @@ function buildDeployWorkflow(waves: GHAWave[], config: GHAWorkflowConfig): strin
       '        with:',
       '          role-to-assume: ' + config.deployRoleArn,
       '          aws-region: ' + config.awsRegion,
-      '',
-      '      - name: Deploy ' + wave.id,
-      '        run: npx cdk deploy ' + stacks.join(' ') + ' --require-approval never --concurrency ' + concurrency + ' --app cdk.out/',
+      ...deploySteps,
     );
 
-    previousJobId = jobId;
+    previousJobId = stageJobId;
   }
 
   return lines.join('\n') + '\n';
