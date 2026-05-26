@@ -20,6 +20,8 @@ export interface GHAOidcRoleProps {
   readonly enableBedrock?: boolean;
   /** Bedrock region @default us-east-1 */
   readonly bedrockRegion?: string;
+  /** Create the GitHub OIDC provider if it doesn't exist in the account @default true */
+  readonly createProvider?: boolean;
 }
 
 /**
@@ -37,9 +39,17 @@ export class GHAOidcRole extends Construct {
 
     const account = Stack.of(this).account;
 
-    // OIDC provider — use existing or create
-    const providerArn = `arn:aws:iam::${account}:oidc-provider/token.actions.githubusercontent.com`;
-    const provider = iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(this, 'GitHubOidc', providerArn);
+    // OIDC provider — create if requested, otherwise import existing
+    let provider: iam.IOpenIdConnectProvider;
+    if (props.createProvider !== false) {
+      provider = new iam.OpenIdConnectProvider(this, 'GitHubOidc', {
+        url: 'https://token.actions.githubusercontent.com',
+        clientIds: ['sts.amazonaws.com'],
+      });
+    } else {
+      const providerArn = `arn:aws:iam::${account}:oidc-provider/token.actions.githubusercontent.com`;
+      provider = iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(this, 'GitHubOidc', providerArn);
+    }
 
     // Build subject conditions
     const subjects: string[] = [];
