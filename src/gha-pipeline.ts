@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { GHAStage } from './gha-stage';
+import { GHAStage, GHAStageOptions } from './gha-stage';
 import { generateWorkflows, GHAWorkflowConfig } from './gha-workflow';
 import { MermaidDiagramOutput } from './shared';
 
@@ -26,8 +26,8 @@ export class GHAPipeline {
    * Add a stage (environment) to the pipeline. Stages deploy sequentially.
    * @param id Stage identifier (e.g. 'dev', 'staging', 'prod')
    */
-  public addStage(id: string): GHAStage {
-    const stage = new GHAStage(id);
+  public addStage(id: string, options?: GHAStageOptions): GHAStage {
+    const stage = new GHAStage(id, options);
     this.stages.push(stage);
     return stage;
   }

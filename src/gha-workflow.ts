@@ -222,6 +222,13 @@ function buildDeployWorkflow(stages: GHAStage[], config: GHAWorkflowConfig): str
       '    name: "🚀 ' + stage.id + '"',
       '    runs-on: ubuntu-latest',
       '    needs: ' + previousJobId,
+    );
+
+    if (stage.environment) {
+      lines.push('    environment: ' + stage.environment);
+    }
+
+    lines.push(
       '    steps:',
       '      - uses: actions/checkout@v4',
       '',

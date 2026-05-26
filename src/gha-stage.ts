@@ -1,6 +1,15 @@
 import { Stack } from 'aws-cdk-lib';
 import { AddStackOptions, GHAWave } from './gha-wave';
 
+export interface GHAStageOptions {
+  /**
+   * GitHub Actions environment name. Enables protection rules (manual approval,
+   * wait timers, branch restrictions). Set to undefined to disable.
+   * @default same as stage id
+   */
+  readonly environment?: string;
+}
+
 /**
  * A stage represents a deployment environment (e.g. dev, staging, prod).
  * Stages deploy sequentially in the order they are added to the pipeline.
@@ -9,9 +18,12 @@ import { AddStackOptions, GHAWave } from './gha-wave';
 export class GHAStage {
   public readonly id: string;
   public readonly waves: GHAWave[] = [];
+  /** GitHub Actions environment name (enables protection rules, approvals, etc.) */
+  public readonly environment?: string;
 
-  constructor(id: string) {
+  constructor(id: string, options?: GHAStageOptions) {
     this.id = id;
+    this.environment = options?.environment ?? id;
   }
 
   /**
