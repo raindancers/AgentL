@@ -1,5 +1,5 @@
 import { Stack } from 'aws-cdk-lib';
-import { GHAWave } from './gha-wave';
+import { AddStackOptions, GHAWave } from './gha-wave';
 
 /**
  * A stage represents a deployment environment (e.g. dev, staging, prod).
@@ -23,6 +23,22 @@ export class GHAStage {
     const wave = new GHAWave(id);
     this.waves.push(wave);
     return wave;
+  }
+
+  /**
+   * Add a stack directly to the stage (goes into a default wave).
+   * Equivalent to adding to a single wave — all stacks deploy in parallel
+   * respecting CDK dependency ordering.
+   * @param stack A standard CDK Stack
+   * @param options Optional dependencies
+   */
+  public addStack(stack: Stack, options?: AddStackOptions): Stack {
+    let defaultWave = this.waves.find(w => w.id === 'default');
+    if (!defaultWave) {
+      defaultWave = new GHAWave('default');
+      this.waves.push(defaultWave);
+    }
+    return defaultWave.addStack(stack, options);
   }
 
   /** Get all stacks in this stage, in wave order. */
