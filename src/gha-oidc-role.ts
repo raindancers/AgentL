@@ -60,6 +60,8 @@ export class GHAOidcRole extends Construct {
     if (props.allowPullRequests !== false) {
       subjects.push(`repo:${props.repository}:pull_request`);
     }
+    // GitHub changes the sub claim when a job uses environment: deployments
+    subjects.push(`repo:${props.repository}:environment:*`);
 
     // IAM role with OIDC trust
     const role = new iam.Role(this, 'Role', {
