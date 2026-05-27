@@ -15,7 +15,7 @@ export interface GHAWorkflowConfig {
   readonly bedrockRegion?: string;
   /** Node.js version @default 22 */
   readonly nodeVersion?: string;
-  /** Install command @default npm ci */
+  /** Install command @default yarn install --frozen-lockfile */
   readonly installCommand?: string;
   /** Synth command @default npx cdk synth */
   readonly synthCommand?: string;
@@ -25,7 +25,11 @@ export interface GHAWorkflowConfig {
   readonly enableBedrockAnalysis?: boolean;
   /** Concurrency for cdk deploy @default 5 */
   readonly deployConcurrency?: number;
+  /** Which stage to diff on PRs @default first stage (index 0) */
+  readonly diffStageIndex?: number;
 }
+
+const ACTIONS_VERSION = 'v6';
 
 /**
  * Generate GitHub Actions workflows for the pipeline.
@@ -40,18 +44,21 @@ export function generateWorkflows(stages: GHAStage[], config: GHAWorkflowConfig)
 
 function buildPRWorkflow(stages: GHAStage[], config: GHAWorkflowConfig): string {
   const nodeVersion = config.nodeVersion || '22';
-  const installCmd = config.installCommand || 'npm ci';
+  const installCmd = config.installCommand || 'yarn install --frozen-lockfile';
   const synthCmd = config.synthCommand || 'npx cdk synth';
   const bedrockRegion = config.bedrockRegion || 'us-east-1';
   const bedrockRoleArn = config.bedrockRoleArn || config.deployRoleArn;
   const enableBedrock = config.enableBedrockAnalysis !== false;
   const branch = config.deployBranch || 'main';
 
-  const allStackNames = stages.flatMap(s => s.allStacks().map(st => st.stackName));
+  // Only diff the first workload stage (skip credentials-only stages if diffStageIndex not set)
+  const diffStageIdx = config.diffStageIndex ?? 1;
+  const diffStage = stages[diffStageIdx] || stages[0];
+  const diffStackNames = diffStage.allStacks().map(st => st.stackName);
 
-  const diffSteps = allStackNames.map(name =>
+  const diffSteps = diffStackNames.map(name =>
     [
-      '          DIFF_OUTPUT=$(npx cdk diff ' + name + ' 2>&1 || true)',
+      '          DIFF_OUTPUT=$(npx cdk diff ' + name + ' --exclusively 2>&1 || true)',
       '          if echo "$DIFF_OUTPUT" | grep -q "There were differences"; then',
       '            HAS_CHANGES=true',
       '            echo "$DIFF_OUTPUT" > "cdk.out/diffs/' + name + '.diff"',
@@ -75,12 +82,12 @@ function buildPRWorkflow(stages: GHAStage[], config: GHAWorkflowConfig): string 
     '  review:',
     '    runs-on: ubuntu-latest',
     '    steps:',
-    '      - uses: actions/checkout@v4',
+    '      - uses: actions/checkout@' + ACTIONS_VERSION,
     '',
-    '      - uses: actions/setup-node@v4',
+    '      - uses: actions/setup-node@' + ACTIONS_VERSION,
     '        with:',
     '          node-version: \'' + nodeVersion + '\'',
-    '          cache: npm',
+    '          cache: yarn',
     '',
     '      - run: ' + installCmd,
     '',
@@ -92,7 +99,7 @@ function buildPRWorkflow(stages: GHAStage[], config: GHAWorkflowConfig): string 
     '      - name: CDK Synth',
     '        run: ' + synthCmd,
     '',
-    '      - name: CDK Diff',
+    '      - name: CDK Diff (' + diffStage.id + ')',
     '        id: diff',
     '        run: |',
     '          mkdir -p cdk.out/diffs',
@@ -103,7 +110,7 @@ function buildPRWorkflow(stages: GHAStage[], config: GHAWorkflowConfig): string 
     '      - name: Generate Diff Summary',
     '        if: steps.diff.outputs.has_changes == \'true\'',
     '        run: |',
-    '          echo "## 📋 CDK Diff Summary" > cdk.out/diffs/comment.md',
+    '          echo "## 📋 CDK Diff Summary (' + diffStage.id + ')" > cdk.out/diffs/comment.md',
     '          echo "" >> cdk.out/diffs/comment.md',
     '          for f in cdk.out/diffs/*.diff; do',
     '            [ -f "$f" ] || continue',
@@ -150,7 +157,7 @@ function buildPRWorkflow(stages: GHAStage[], config: GHAWorkflowConfig): string 
 
 function buildDeployWorkflow(stages: GHAStage[], config: GHAWorkflowConfig): string {
   const nodeVersion = config.nodeVersion || '22';
-  const installCmd = config.installCommand || 'npm ci';
+  const installCmd = config.installCommand || 'yarn install --frozen-lockfile';
   const synthCmd = config.synthCommand || 'npx cdk synth';
   const concurrency = config.deployConcurrency || 5;
   const branch = config.deployBranch || 'main';
@@ -174,12 +181,12 @@ function buildDeployWorkflow(stages: GHAStage[], config: GHAWorkflowConfig): str
     '  synth:',
     '    runs-on: ubuntu-latest',
     '    steps:',
-    '      - uses: actions/checkout@v4',
+    '      - uses: actions/checkout@' + ACTIONS_VERSION,
     '',
-    '      - uses: actions/setup-node@v4',
+    '      - uses: actions/setup-node@' + ACTIONS_VERSION,
     '        with:',
     '          node-version: \'' + nodeVersion + '\'',
-    '          cache: npm',
+    '          cache: yarn',
     '',
     '      - run: ' + installCmd,
     '',
@@ -197,15 +204,12 @@ function buildDeployWorkflow(stages: GHAStage[], config: GHAWorkflowConfig): str
     '          path: cdk.out/',
   ];
 
-  // One job per stage, each stage deploys its waves sequentially
   let previousJobId = 'synth';
 
   for (let s = 0; s < stages.length; s++) {
     const stage = stages[s];
     const stageJobId = 'deploy_' + stage.id;
 
-    // Each wave within the stage becomes a step (sequential)
-    // Stacks within a wave use --concurrency (parallel)
     const deploySteps: string[] = [];
     for (const wave of stage.waves) {
       const stacks = wave.stacks.map(e => e.stack.stackName).join(' ');
@@ -230,12 +234,12 @@ function buildDeployWorkflow(stages: GHAStage[], config: GHAWorkflowConfig): str
 
     lines.push(
       '    steps:',
-      '      - uses: actions/checkout@v4',
+      '      - uses: actions/checkout@' + ACTIONS_VERSION,
       '',
-      '      - uses: actions/setup-node@v4',
+      '      - uses: actions/setup-node@' + ACTIONS_VERSION,
       '        with:',
       '          node-version: \'' + nodeVersion + '\'',
-      '          cache: npm',
+      '          cache: yarn',
       '',
       '      - run: ' + installCmd,
       '',
