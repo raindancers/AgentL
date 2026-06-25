@@ -11,7 +11,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   description: 'CDK pipeline construct with Bedrock Well-Architected analysis and cdk diff integration',
   jsiiVersion: '~5.9.0',
   license: 'Apache-2.0',
-  name: 'agentl',
+  name: '@raindancers/agentl',
   packageManager: javascript.NodePackageManager.NPM,
   projenrcTs: true,
   repositoryUrl: 'https://github.com/raindancers/AgentL',
