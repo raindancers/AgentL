@@ -72,6 +72,8 @@
     "yaml": "^2.9.0"
   },
   "bundledDependencies": [
+    "@aws-sdk/client-bedrock-runtime",
+    "@aws-sdk/credential-providers",
     "fast-json-patch",
     "yaml"
   ],
