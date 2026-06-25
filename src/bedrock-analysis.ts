@@ -204,7 +204,7 @@ export function formatAnalysisAsMarkdown(results: AnalysisResult[]): string {
     return md;
   }
 
-  md += `| Severity | Count |\n|----------|-------|\n`;
+  md += '| Severity | Count |\n|----------|-------|\n';
   if (highCount > 0) md += `| 🔴 HIGH | ${highCount} |\n`;
   if (medCount > 0) md += `| 🟡 MEDIUM | ${medCount} |\n`;
   if (lowCount > 0) md += `| 🔵 LOW | ${lowCount} |\n`;
