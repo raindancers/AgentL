@@ -2,7 +2,7 @@ import { awscdk, javascript } from 'projen';
 const project = new awscdk.AwsCdkConstructLibrary({
   author: 'raindancers',
   authorAddress: 'andrew@raindancers.cloud',
-  cdkVersion: '2.133.0',
+  cdkVersion: '2.260.0',
   defaultReleaseBranch: 'main',
   bundledDeps: ['fast-json-patch', 'yaml', '@aws-sdk/client-bedrock-runtime', '@aws-sdk/credential-providers'],
   devDeps: [
