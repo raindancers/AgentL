@@ -12,6 +12,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   jsiiVersion: '~5.9.0',
   license: 'Apache-2.0',
   name: '@raindancers/agentl',
+  npmAccess: javascript.NpmAccess.PUBLIC,
   packageManager: javascript.NodePackageManager.NPM,
   projenrcTs: true,
   repositoryUrl: 'https://github.com/raindancers/AgentL',
