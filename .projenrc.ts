@@ -5,10 +5,12 @@ const project = new awscdk.AwsCdkConstructLibrary({
   cdkVersion: '2.133.0',
   defaultReleaseBranch: 'main',
   bundledDeps: ['fast-json-patch', 'yaml'],
-  devDeps: [
-    '@types/node',
+  deps: [
     '@aws-sdk/client-bedrock-runtime',
     '@aws-sdk/credential-providers',
+  ],
+  devDeps: [
+    '@types/node',
   ],
   description: 'CDK pipeline construct with Bedrock Well-Architected analysis and cdk diff integration',
   jsiiVersion: '~5.9.0',
