@@ -17,4 +17,16 @@ const project = new awscdk.AwsCdkConstructLibrary({
   projenrcTs: true,
   repositoryUrl: 'https://github.com/raindancers/AgentL',
 });
+
+// Fix: recompile after unbump so JSII RTTI version symbols reset to 0.0.0
+const releaseTask = project.tasks.tryFind('release')!;
+releaseTask.reset();
+releaseTask.env('RELEASE', 'true');
+releaseTask.exec('rm -fr dist');
+releaseTask.spawn(project.tasks.tryFind('bump')!);
+releaseTask.spawn(project.tasks.tryFind('build')!);
+releaseTask.spawn(project.tasks.tryFind('unbump')!);
+releaseTask.spawn(project.tasks.tryFind('compile')!);
+releaseTask.exec('git diff --ignore-space-at-eol --exit-code');
+
 project.synth();

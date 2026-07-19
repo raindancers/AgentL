@@ -223,6 +223,9 @@
           "spawn": "unbump"
         },
         {
+          "spawn": "compile"
+        },
+        {
           "exec": "git diff --ignore-space-at-eol --exit-code"
         }
       ]
