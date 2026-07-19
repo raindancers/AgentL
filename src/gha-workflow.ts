@@ -27,6 +27,8 @@ export interface GHAWorkflowConfig {
   readonly deployConcurrency?: number;
   /** Which stage to diff on PRs @default first stage (index 0) */
   readonly diffStageIndex?: number;
+  /** Path filters for triggering workflows. If set, workflows only trigger on changes matching these paths (e.g. ['src/**', 'package.json']). */
+  readonly paths?: string[];
 }
 
 const ACTIONS_VERSION = 'v6';
@@ -42,6 +44,17 @@ export function generateWorkflows(stages: GHAStage[], config: GHAWorkflowConfig)
   fs.writeFileSync(path.join(outputDir, 'deploy.yml'), buildDeployWorkflow(stages, config));
 }
 
+function buildPathsBlock(config: GHAWorkflowConfig): string[] {
+  if (!config.paths || config.paths.length === 0) {
+    return [];
+  }
+  const result: string[] = ['    paths:'];
+  for (const p of config.paths) {
+    result.push('      - \'' + p + '\'');
+  }
+  return result;
+}
+
 function buildPRWorkflow(stages: GHAStage[], config: GHAWorkflowConfig): string {
   const nodeVersion = config.nodeVersion || '22';
   const installCmd = config.installCommand || 'yarn install --frozen-lockfile';
@@ -51,7 +64,6 @@ function buildPRWorkflow(stages: GHAStage[], config: GHAWorkflowConfig): string 
   const enableBedrock = config.enableBedrockAnalysis !== false;
   const branch = config.deployBranch || 'main';
 
-  // Only diff the first workload stage (skip credentials-only stages if diffStageIndex not set)
   const diffStageIdx = config.diffStageIndex ?? 1;
   const diffStage = stages[diffStageIdx] || stages[0];
   const diffStackNames = diffStage.allStacks().map(st => st.stackName);
@@ -72,6 +84,7 @@ function buildPRWorkflow(stages: GHAStage[], config: GHAWorkflowConfig): string 
     'on:',
     '  pull_request:',
     '    branches: [' + branch + ']',
+    ...buildPathsBlock(config),
     '',
     'permissions:',
     '  id-token: write',
@@ -168,6 +181,7 @@ function buildDeployWorkflow(stages: GHAStage[], config: GHAWorkflowConfig): str
     'on:',
     '  push:',
     '    branches: [' + branch + ']',
+    ...buildPathsBlock(config),
     '',
     'permissions:',
     '  id-token: write',

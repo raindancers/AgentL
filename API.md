@@ -767,6 +767,7 @@ const gHAWorkflowConfig: GHAWorkflowConfig = { ... }
 | <code><a href="#@raindancers/agentl.GHAWorkflowConfig.property.installCommand">installCommand</a></code> | <code>string</code> | Install command. |
 | <code><a href="#@raindancers/agentl.GHAWorkflowConfig.property.nodeVersion">nodeVersion</a></code> | <code>string</code> | Node.js version. |
 | <code><a href="#@raindancers/agentl.GHAWorkflowConfig.property.outputDir">outputDir</a></code> | <code>string</code> | Directory to write workflow files. |
+| <code><a href="#@raindancers/agentl.GHAWorkflowConfig.property.paths">paths</a></code> | <code>string[]</code> | Path filters for triggering workflows. |
 | <code><a href="#@raindancers/agentl.GHAWorkflowConfig.property.synthCommand">synthCommand</a></code> | <code>string</code> | Synth command. |
 
 ---
@@ -909,6 +910,20 @@ public readonly outputDir: string;
 - *Default:* .github/workflows
 
 Directory to write workflow files.
+
+---
+
+##### `paths`<sup>Optional</sup> <a name="paths" id="@raindancers/agentl.GHAWorkflowConfig.property.paths"></a>
+
+```typescript
+public readonly paths: string[];
+```
+
+- *Type:* string[]
+
+Path filters for triggering workflows.
+
+If set, workflows only trigger on changes matching these paths (e.g. ['src/**', 'package.json']).
 
 ---
 

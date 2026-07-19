@@ -24,6 +24,8 @@ export interface GHAWorkflowConfig {
     readonly deployConcurrency?: number;
     /** Which stage to diff on PRs @default first stage (index 0) */
     readonly diffStageIndex?: number;
+    /** Path filters for triggering workflows. If set, workflows only trigger on changes matching these paths (e.g. ['src/**', 'package.json']). */
+    readonly paths?: string[];
 }
 /**
  * Generate GitHub Actions workflows for the pipeline.
