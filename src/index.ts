@@ -4,6 +4,7 @@ export * from './gha-stage';
 export * from './gha-wave';
 export * from './gha-workflow';
 export * from './gha-oidc-role';
+export * from './gha-codebuild-trigger';
 export * from './shared';
 export * from './utils/json-patch';
 

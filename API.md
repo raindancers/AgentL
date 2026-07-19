@@ -551,6 +551,129 @@ public readonly stackName: string;
 
 ---
 
+### GHACodeBuildTriggerConfig <a name="GHACodeBuildTriggerConfig" id="@raindancers/agentl.GHACodeBuildTriggerConfig"></a>
+
+#### Initializer <a name="Initializer" id="@raindancers/agentl.GHACodeBuildTriggerConfig.Initializer"></a>
+
+```typescript
+import { GHACodeBuildTriggerConfig } from '@raindancers/agentl'
+
+const gHACodeBuildTriggerConfig: GHACodeBuildTriggerConfig = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#@raindancers/agentl.GHACodeBuildTriggerConfig.property.awsRegion">awsRegion</a></code> | <code>string</code> | AWS region where the CodeBuild project lives. |
+| <code><a href="#@raindancers/agentl.GHACodeBuildTriggerConfig.property.codeBuildProjectName">codeBuildProjectName</a></code> | <code>string</code> | Name of the CodeBuild project to trigger. |
+| <code><a href="#@raindancers/agentl.GHACodeBuildTriggerConfig.property.deployRoleArn">deployRoleArn</a></code> | <code>string</code> | IAM role ARN to assume via GitHub OIDC. |
+| <code><a href="#@raindancers/agentl.GHACodeBuildTriggerConfig.property.triggerPaths">triggerPaths</a></code> | <code>string[]</code> | Path filters that trigger this workflow (e.g. ['publish/**', 'mkdocs.yml']). |
+| <code><a href="#@raindancers/agentl.GHACodeBuildTriggerConfig.property.workflowFileName">workflowFileName</a></code> | <code>string</code> | Filename for the workflow (e.g. 'publish-docs.yml'). |
+| <code><a href="#@raindancers/agentl.GHACodeBuildTriggerConfig.property.workflowName">workflowName</a></code> | <code>string</code> | Name of the workflow (appears in GitHub Actions UI). |
+| <code><a href="#@raindancers/agentl.GHACodeBuildTriggerConfig.property.deployBranch">deployBranch</a></code> | <code>string</code> | Branch that triggers the workflow. |
+| <code><a href="#@raindancers/agentl.GHACodeBuildTriggerConfig.property.outputDir">outputDir</a></code> | <code>string</code> | Directory to write workflow files. |
+
+---
+
+##### `awsRegion`<sup>Required</sup> <a name="awsRegion" id="@raindancers/agentl.GHACodeBuildTriggerConfig.property.awsRegion"></a>
+
+```typescript
+public readonly awsRegion: string;
+```
+
+- *Type:* string
+
+AWS region where the CodeBuild project lives.
+
+---
+
+##### `codeBuildProjectName`<sup>Required</sup> <a name="codeBuildProjectName" id="@raindancers/agentl.GHACodeBuildTriggerConfig.property.codeBuildProjectName"></a>
+
+```typescript
+public readonly codeBuildProjectName: string;
+```
+
+- *Type:* string
+
+Name of the CodeBuild project to trigger.
+
+---
+
+##### `deployRoleArn`<sup>Required</sup> <a name="deployRoleArn" id="@raindancers/agentl.GHACodeBuildTriggerConfig.property.deployRoleArn"></a>
+
+```typescript
+public readonly deployRoleArn: string;
+```
+
+- *Type:* string
+
+IAM role ARN to assume via GitHub OIDC.
+
+---
+
+##### `triggerPaths`<sup>Required</sup> <a name="triggerPaths" id="@raindancers/agentl.GHACodeBuildTriggerConfig.property.triggerPaths"></a>
+
+```typescript
+public readonly triggerPaths: string[];
+```
+
+- *Type:* string[]
+
+Path filters that trigger this workflow (e.g. ['publish/**', 'mkdocs.yml']).
+
+---
+
+##### `workflowFileName`<sup>Required</sup> <a name="workflowFileName" id="@raindancers/agentl.GHACodeBuildTriggerConfig.property.workflowFileName"></a>
+
+```typescript
+public readonly workflowFileName: string;
+```
+
+- *Type:* string
+
+Filename for the workflow (e.g. 'publish-docs.yml').
+
+---
+
+##### `workflowName`<sup>Required</sup> <a name="workflowName" id="@raindancers/agentl.GHACodeBuildTriggerConfig.property.workflowName"></a>
+
+```typescript
+public readonly workflowName: string;
+```
+
+- *Type:* string
+
+Name of the workflow (appears in GitHub Actions UI).
+
+---
+
+##### `deployBranch`<sup>Optional</sup> <a name="deployBranch" id="@raindancers/agentl.GHACodeBuildTriggerConfig.property.deployBranch"></a>
+
+```typescript
+public readonly deployBranch: string;
+```
+
+- *Type:* string
+- *Default:* main
+
+Branch that triggers the workflow.
+
+---
+
+##### `outputDir`<sup>Optional</sup> <a name="outputDir" id="@raindancers/agentl.GHACodeBuildTriggerConfig.property.outputDir"></a>
+
+```typescript
+public readonly outputDir: string;
+```
+
+- *Type:* string
+- *Default:* .github/workflows
+
+Directory to write workflow files.
+
+---
+
 ### GHAOidcRoleProps <a name="GHAOidcRoleProps" id="@raindancers/agentl.GHAOidcRoleProps"></a>
 
 #### Initializer <a name="Initializer" id="@raindancers/agentl.GHAOidcRoleProps.Initializer"></a>
@@ -767,8 +890,8 @@ const gHAWorkflowConfig: GHAWorkflowConfig = { ... }
 | <code><a href="#@raindancers/agentl.GHAWorkflowConfig.property.installCommand">installCommand</a></code> | <code>string</code> | Install command. |
 | <code><a href="#@raindancers/agentl.GHAWorkflowConfig.property.nodeVersion">nodeVersion</a></code> | <code>string</code> | Node.js version. |
 | <code><a href="#@raindancers/agentl.GHAWorkflowConfig.property.outputDir">outputDir</a></code> | <code>string</code> | Directory to write workflow files. |
-| <code><a href="#@raindancers/agentl.GHAWorkflowConfig.property.paths">paths</a></code> | <code>string[]</code> | Path filters for triggering workflows. |
 | <code><a href="#@raindancers/agentl.GHAWorkflowConfig.property.synthCommand">synthCommand</a></code> | <code>string</code> | Synth command. |
+| <code><a href="#@raindancers/agentl.GHAWorkflowConfig.property.triggerDeployPaths">triggerDeployPaths</a></code> | <code>string[]</code> | Path filters for triggering deploy and PR review workflows. |
 
 ---
 
@@ -913,20 +1036,6 @@ Directory to write workflow files.
 
 ---
 
-##### `paths`<sup>Optional</sup> <a name="paths" id="@raindancers/agentl.GHAWorkflowConfig.property.paths"></a>
-
-```typescript
-public readonly paths: string[];
-```
-
-- *Type:* string[]
-
-Path filters for triggering workflows.
-
-If set, workflows only trigger on changes matching these paths (e.g. ['src/**', 'package.json']).
-
----
-
 ##### `synthCommand`<sup>Optional</sup> <a name="synthCommand" id="@raindancers/agentl.GHAWorkflowConfig.property.synthCommand"></a>
 
 ```typescript
@@ -937,6 +1046,20 @@ public readonly synthCommand: string;
 - *Default:* npx cdk synth
 
 Synth command.
+
+---
+
+##### `triggerDeployPaths`<sup>Optional</sup> <a name="triggerDeployPaths" id="@raindancers/agentl.GHAWorkflowConfig.property.triggerDeployPaths"></a>
+
+```typescript
+public readonly triggerDeployPaths: string[];
+```
+
+- *Type:* string[]
+
+Path filters for triggering deploy and PR review workflows.
+
+If set, workflows only trigger on changes matching these paths (e.g. ['src/**', 'package.json']).
 
 ---
 
