@@ -573,6 +573,7 @@ const gHACodeBuildTriggerConfig: GHACodeBuildTriggerConfig = { ... }
 | <code><a href="#@raindancers/agentl.GHACodeBuildTriggerConfig.property.workflowName">workflowName</a></code> | <code>string</code> | Name of the workflow (appears in GitHub Actions UI). |
 | <code><a href="#@raindancers/agentl.GHACodeBuildTriggerConfig.property.deployBranch">deployBranch</a></code> | <code>string</code> | Branch that triggers the workflow. |
 | <code><a href="#@raindancers/agentl.GHACodeBuildTriggerConfig.property.outputDir">outputDir</a></code> | <code>string</code> | Directory to write workflow files. |
+| <code><a href="#@raindancers/agentl.GHACodeBuildTriggerConfig.property.runnerSize">runnerSize</a></code> | <code><a href="#@raindancers/agentl.RunnerSize">RunnerSize</a></code> | GitHub Actions runner size. |
 
 ---
 
@@ -671,6 +672,19 @@ public readonly outputDir: string;
 - *Default:* .github/workflows
 
 Directory to write workflow files.
+
+---
+
+##### `runnerSize`<sup>Optional</sup> <a name="runnerSize" id="@raindancers/agentl.GHACodeBuildTriggerConfig.property.runnerSize"></a>
+
+```typescript
+public readonly runnerSize: RunnerSize;
+```
+
+- *Type:* <a href="#@raindancers/agentl.RunnerSize">RunnerSize</a>
+- *Default:* RunnerSize.STANDARD (2 cores)
+
+GitHub Actions runner size.
 
 ---
 
@@ -890,6 +904,7 @@ const gHAWorkflowConfig: GHAWorkflowConfig = { ... }
 | <code><a href="#@raindancers/agentl.GHAWorkflowConfig.property.installCommand">installCommand</a></code> | <code>string</code> | Install command. |
 | <code><a href="#@raindancers/agentl.GHAWorkflowConfig.property.nodeVersion">nodeVersion</a></code> | <code>string</code> | Node.js version. |
 | <code><a href="#@raindancers/agentl.GHAWorkflowConfig.property.outputDir">outputDir</a></code> | <code>string</code> | Directory to write workflow files. |
+| <code><a href="#@raindancers/agentl.GHAWorkflowConfig.property.runnerSize">runnerSize</a></code> | <code><a href="#@raindancers/agentl.RunnerSize">RunnerSize</a></code> | GitHub Actions runner size. |
 | <code><a href="#@raindancers/agentl.GHAWorkflowConfig.property.synthCommand">synthCommand</a></code> | <code>string</code> | Synth command. |
 | <code><a href="#@raindancers/agentl.GHAWorkflowConfig.property.triggerDeployPaths">triggerDeployPaths</a></code> | <code>string[]</code> | Path filters for triggering deploy and PR review workflows. |
 
@@ -1033,6 +1048,19 @@ public readonly outputDir: string;
 - *Default:* .github/workflows
 
 Directory to write workflow files.
+
+---
+
+##### `runnerSize`<sup>Optional</sup> <a name="runnerSize" id="@raindancers/agentl.GHAWorkflowConfig.property.runnerSize"></a>
+
+```typescript
+public readonly runnerSize: RunnerSize;
+```
+
+- *Type:* <a href="#@raindancers/agentl.RunnerSize">RunnerSize</a>
+- *Default:* RunnerSize.STANDARD (2 cores)
+
+GitHub Actions runner size.
 
 ---
 
@@ -1841,6 +1869,53 @@ JsonPatch.test('/best_biscuit/name', 'Choco Leibniz')
 
 
 ## Enums <a name="Enums" id="Enums"></a>
+
+### RunnerSize <a name="RunnerSize" id="@raindancers/agentl.RunnerSize"></a>
+
+GitHub Actions runner size.
+
+Controls the number of CPU cores available to the runner.
+Larger runners are faster but cost more. Requires GitHub Team or Enterprise plan
+for anything above STANDARD.
+
+#### Members <a name="Members" id="Members"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#@raindancers/agentl.RunnerSize.STANDARD">STANDARD</a></code> | 2 cores (default, free tier). |
+| <code><a href="#@raindancers/agentl.RunnerSize.LARGE">LARGE</a></code> | 4 cores. |
+| <code><a href="#@raindancers/agentl.RunnerSize.XLARGE">XLARGE</a></code> | 8 cores. |
+| <code><a href="#@raindancers/agentl.RunnerSize.XXLARGE">XXLARGE</a></code> | 16 cores. |
+
+---
+
+##### `STANDARD` <a name="STANDARD" id="@raindancers/agentl.RunnerSize.STANDARD"></a>
+
+2 cores (default, free tier).
+
+---
+
+
+##### `LARGE` <a name="LARGE" id="@raindancers/agentl.RunnerSize.LARGE"></a>
+
+4 cores.
+
+---
+
+
+##### `XLARGE` <a name="XLARGE" id="@raindancers/agentl.RunnerSize.XLARGE"></a>
+
+8 cores.
+
+---
+
+
+##### `XXLARGE` <a name="XXLARGE" id="@raindancers/agentl.RunnerSize.XXLARGE"></a>
+
+16 cores.
+
+---
+
 
 ### WellArchitectedPillar <a name="WellArchitectedPillar" id="@raindancers/agentl.WellArchitectedPillar"></a>
 

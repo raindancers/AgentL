@@ -1,4 +1,5 @@
 import { GHAStage } from './gha-stage';
+import { RunnerSize } from './shared';
 export interface GHAWorkflowConfig {
     /** Directory to write workflow files @default .github/workflows */
     readonly outputDir?: string;
@@ -26,6 +27,8 @@ export interface GHAWorkflowConfig {
     readonly diffStageIndex?: number;
     /** Path filters for triggering deploy and PR review workflows. If set, workflows only trigger on changes matching these paths (e.g. ['src/**', 'package.json']). */
     readonly triggerDeployPaths?: string[];
+    /** GitHub Actions runner size @default RunnerSize.STANDARD (2 cores) */
+    readonly runnerSize?: RunnerSize;
 }
 /**
  * Generate GitHub Actions workflows for the pipeline.
