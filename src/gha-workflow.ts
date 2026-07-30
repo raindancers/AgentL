@@ -75,7 +75,7 @@ function buildPRWorkflow(stages: GHAStage[], config: GHAWorkflowConfig): string 
   const diffSteps = diffStackNames.map(name =>
     [
       '          DIFF_OUTPUT=$(npx cdk diff ' + name + ' --exclusively 2>&1 || true)',
-      '          if echo "$DIFF_OUTPUT" | grep -q "There were differences"; then',
+      '          if echo "$DIFF_OUTPUT" | grep -qE "There were differences|Number of stacks with differences"; then',
       '            HAS_CHANGES=true',
       '            echo "$DIFF_OUTPUT" > "cdk.out/diffs/' + name + '.diff"',
       '          fi',
