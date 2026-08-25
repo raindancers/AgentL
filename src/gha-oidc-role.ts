@@ -22,6 +22,13 @@ export interface GHAOidcRoleProps {
   readonly bedrockRegion?: string;
   /** Create the GitHub OIDC provider if it doesn't exist in the account @default true */
   readonly createProvider?: boolean;
+  /**
+   * Maximum session duration for the deploy role. Must be between 1 and 12 hours.
+   * Raise this when CDK deployments run longer than the session lifetime and fail
+   * with an ExpiredToken error.
+   * @default Duration.hours(1)
+   */
+  readonly maxSessionDuration?: core.Duration;
 }
 
 /**
@@ -74,7 +81,7 @@ export class GHAOidcRole extends Construct {
           'token.actions.githubusercontent.com:sub': subjects.length === 1 ? subjects[0] : subjects,
         },
       }),
-      maxSessionDuration: core.Duration.hours(1),
+      maxSessionDuration: props.maxSessionDuration ?? core.Duration.hours(1),
     });
 
     // CDK deploy permissions

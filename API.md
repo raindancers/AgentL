@@ -709,6 +709,7 @@ const gHAOidcRoleProps: GHAOidcRoleProps = { ... }
 | <code><a href="#@raindancers/agentl.GHAOidcRoleProps.property.createProvider">createProvider</a></code> | <code>boolean</code> | Create the GitHub OIDC provider if it doesn't exist in the account. |
 | <code><a href="#@raindancers/agentl.GHAOidcRoleProps.property.enableBedrock">enableBedrock</a></code> | <code>boolean</code> | Enable Bedrock InvokeModel permission. |
 | <code><a href="#@raindancers/agentl.GHAOidcRoleProps.property.managedPolicies">managedPolicies</a></code> | <code>string[]</code> | Additional managed policy ARNs to attach. |
+| <code><a href="#@raindancers/agentl.GHAOidcRoleProps.property.maxSessionDuration">maxSessionDuration</a></code> | <code>aws-cdk-lib.Duration</code> | Maximum session duration for the deploy role. |
 | <code><a href="#@raindancers/agentl.GHAOidcRoleProps.property.targetAccountIds">targetAccountIds</a></code> | <code>string[]</code> | AWS account IDs the role can deploy to (for cross-account CDK bootstrap trust). |
 
 ---
@@ -799,6 +800,23 @@ public readonly managedPolicies: string[];
 - *Type:* string[]
 
 Additional managed policy ARNs to attach.
+
+---
+
+##### `maxSessionDuration`<sup>Optional</sup> <a name="maxSessionDuration" id="@raindancers/agentl.GHAOidcRoleProps.property.maxSessionDuration"></a>
+
+```typescript
+public readonly maxSessionDuration: Duration;
+```
+
+- *Type:* aws-cdk-lib.Duration
+- *Default:* Duration.hours(1)
+
+Maximum session duration for the deploy role.
+
+Must be between 1 and 12 hours.
+Raise this when CDK deployments run longer than the session lifetime and fail
+with an ExpiredToken error.
 
 ---
 
