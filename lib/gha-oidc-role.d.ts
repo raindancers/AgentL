@@ -1,4 +1,5 @@
 import { aws_iam as iam } from 'aws-cdk-lib';
+import * as core from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 export interface GHAOidcRoleProps {
     /** GitHub org/user and repo name (e.g. 'raindancers/AgentL') */
@@ -17,6 +18,13 @@ export interface GHAOidcRoleProps {
     readonly bedrockRegion?: string;
     /** Create the GitHub OIDC provider if it doesn't exist in the account @default true */
     readonly createProvider?: boolean;
+    /**
+     * Maximum session duration for the deploy role. Must be between 1 and 12 hours.
+     * Raise this when CDK deployments run longer than the session lifetime and fail
+     * with an ExpiredToken error.
+     * @default Duration.hours(1)
+     */
+    readonly maxSessionDuration?: core.Duration;
 }
 /**
  * Creates a GitHub Actions OIDC provider (if not already present) and an IAM role
