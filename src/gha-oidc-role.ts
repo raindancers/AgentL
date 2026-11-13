@@ -29,6 +29,44 @@ export interface GHAOidcRoleProps {
    * @default Duration.hours(1)
    */
   readonly maxSessionDuration?: core.Duration;
+  /**
+   * The start of the OIDC `sub` claim that GitHub sends for this repository, used in place of
+   * `repo:<repository>`. Branch, pull request and environment subjects are built on it.
+   *
+   * Repositories created after 15 July 2026, and repositories that opt in, use immutable subject
+   * claims. Their `sub` carries the owner and repository IDs, for example
+   * `repo:my-org@123456/my-repo@7890123`. A trust policy built from `repo:<repository>` never
+   * matches them. Read the value from GitHub:
+   *
+   *   gh api repos/<owner>/<repo>/actions/oidc/customization/sub --jq .sub_claim_prefix
+   *
+   * Must start with `repo:` and must not contain wildcards.
+   *
+   * @default `repo:<repository>`
+   */
+  readonly subjectPrefix?: string;
+}
+
+/**
+ * Builds the `sub` claim patterns the deploy role trusts.
+ */
+export function buildOidcSubjects(props: GHAOidcRoleProps): string[] {
+  const prefix = props.subjectPrefix ?? `repo:${props.repository}`;
+  if (!prefix.startsWith('repo:') || /[*?]/.test(prefix) || prefix.endsWith(':')) {
+    throw new Error(`subjectPrefix must start with "repo:", have no wildcards and not end with ":" (got "${prefix}")`);
+  }
+
+  const subjects: string[] = [];
+  const branches = props.allowedBranches || ['main'];
+  for (const branch of branches) {
+    subjects.push(`${prefix}:ref:refs/heads/${branch}`);
+  }
+  if (props.allowPullRequests !== false) {
+    subjects.push(`${prefix}:pull_request`);
+  }
+  // GitHub changes the sub claim when a job uses environment: deployments
+  subjects.push(`${prefix}:environment:*`);
+  return subjects;
 }
 
 /**
@@ -59,16 +97,7 @@ export class GHAOidcRole extends Construct {
     }
 
     // Build subject conditions
-    const subjects: string[] = [];
-    const branches = props.allowedBranches || ['main'];
-    for (const branch of branches) {
-      subjects.push(`repo:${props.repository}:ref:refs/heads/${branch}`);
-    }
-    if (props.allowPullRequests !== false) {
-      subjects.push(`repo:${props.repository}:pull_request`);
-    }
-    // GitHub changes the sub claim when a job uses environment: deployments
-    subjects.push(`repo:${props.repository}:environment:*`);
+    const subjects = buildOidcSubjects(props);
 
     // IAM role with OIDC trust
     const role = new iam.Role(this, 'Role', {

@@ -710,6 +710,7 @@ const gHAOidcRoleProps: GHAOidcRoleProps = { ... }
 | <code><a href="#@raindancers/agentl.GHAOidcRoleProps.property.enableBedrock">enableBedrock</a></code> | <code>boolean</code> | Enable Bedrock InvokeModel permission. |
 | <code><a href="#@raindancers/agentl.GHAOidcRoleProps.property.managedPolicies">managedPolicies</a></code> | <code>string[]</code> | Additional managed policy ARNs to attach. |
 | <code><a href="#@raindancers/agentl.GHAOidcRoleProps.property.maxSessionDuration">maxSessionDuration</a></code> | <code>aws-cdk-lib.Duration</code> | Maximum session duration for the deploy role. |
+| <code><a href="#@raindancers/agentl.GHAOidcRoleProps.property.subjectPrefix">subjectPrefix</a></code> | <code>string</code> | The start of the OIDC `sub` claim that GitHub sends for this repository, used in place of `repo:<repository>`. |
 | <code><a href="#@raindancers/agentl.GHAOidcRoleProps.property.targetAccountIds">targetAccountIds</a></code> | <code>string[]</code> | AWS account IDs the role can deploy to (for cross-account CDK bootstrap trust). |
 
 ---
@@ -817,6 +818,30 @@ Maximum session duration for the deploy role.
 Must be between 1 and 12 hours.
 Raise this when CDK deployments run longer than the session lifetime and fail
 with an ExpiredToken error.
+
+---
+
+##### `subjectPrefix`<sup>Optional</sup> <a name="subjectPrefix" id="@raindancers/agentl.GHAOidcRoleProps.property.subjectPrefix"></a>
+
+```typescript
+public readonly subjectPrefix: string;
+```
+
+- *Type:* string
+- *Default:* `repo:<repository>`
+
+The start of the OIDC `sub` claim that GitHub sends for this repository, used in place of `repo:<repository>`.
+
+Branch, pull request and environment subjects are built on it.
+
+Repositories created after 15 July 2026, and repositories that opt in, use immutable subject
+claims. Their `sub` carries the owner and repository IDs, for example
+`repo:my-org@123456/my-repo@7890123`. A trust policy built from `repo:<repository>` never
+matches them. Read the value from GitHub:
+
+  gh api repos/<owner>/<repo>/actions/oidc/customization/sub --jq .sub_claim_prefix
+
+Must start with `repo:` and must not contain wildcards.
 
 ---
 
