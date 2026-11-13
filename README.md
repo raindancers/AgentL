@@ -150,7 +150,25 @@ pipeline.synth(true, undefined, {
 
 ## Prerequisites
 
-- AWS account with OIDC configured for GitHub Actions
+- AWS account with OIDC configured for GitHub Actions (`GHAOidcRole` creates the provider and deploy role)
+
+### Immutable OIDC subject claims
+
+Repositories created after 15 July 2026 send an OIDC `sub` claim with the owner and repository IDs,
+for example `repo:my-org@123456/my-repo@7890123:ref:refs/heads/main`. A role trusting
+`repo:my-org/my-repo:*` fails with `Not authorized to perform sts:AssumeRoleWithWebIdentity`.
+Pass the prefix GitHub reports:
+
+```bash
+gh api repos/my-org/my-repo/actions/oidc/customization/sub --jq .sub_claim_prefix
+```
+
+```typescript
+new GHAOidcRole(stack, 'Deploy', {
+  repository: 'my-org/my-repo',
+  subjectPrefix: 'repo:my-org@123456/my-repo@7890123',
+});
+```
 - IAM role with CDK deploy permissions
 - (For Bedrock analysis) IAM role with `bedrock:InvokeModel` permission
 - CDK bootstrapped in target accounts/regions
